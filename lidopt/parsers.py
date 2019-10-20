@@ -1,34 +1,28 @@
 import numpy as np
 import pandas as pd
-import yaml
+from . import exp, sim
 
-with open("config.yaml", 'r') as stream:
-    config = yaml.safe_load(stream)
-
-exp = config['experiment']
-sim = config['simulation']
-
-def parse_experiment(experiment_file=exp['file']):
+def parse_experiment(experiment_file=exp['file'], names=exp['headers']):
     exp = pd.read_csv(experiment_file
                          , sep='\t'
                          , header=None
                          , index_col=0
                          , parse_dates=True
-                         , names=exp['headers'])
+                         , names=names)
     
     
     exp.sort_index(ascending=True, inplace=True)
     return exp
 
 
-def parse_report(report_file):
+def parse_report(report_file='report.txt', names=sim['headers']):
     report = pd.read_csv(report_file
                         , skiprows=9
                         , header=None
                         , parse_dates=True
                         , index_col=0
                         , sep='\t'
-                        , names=sim['headers'] )
+                        , names=names)
         
     report.sort_index(ascending=True, inplace=True)
     report[sim['inflow_ml_min']] = report[sim['inflow_mm_hr']].apply(lambda val: convert_units(val))

@@ -1,5 +1,5 @@
 experiment:
-  file: 'rain_AB.txt'
+  file: './data/input/rain_AB.txt'
   headers: ["DateTime", "ml_min_IN_A", "ml_min_OUT_A", "ml_min_IN_B", "ml_min_OUT_B"]
   diameter: 20
   inflow: 'ml_min_IN_A'
@@ -7,7 +7,8 @@ experiment:
 
 
 simulation:
-  file: 'sgs_valec_01_jp.inp'
+  lid.name: "valec_01"
+  file: './data/input/sgs_valec_01_jp.inp'
   headers: ['DateTime', 'ElapsedTimeHours'
                                     , 'TotalInflow_mm/hr', 'TotalEvap_mm/hr'
                                     , 'SurfaceInfill_mm/hr', 'PavementPerc_mm/hr'
@@ -17,17 +18,17 @@ simulation:
                                     , 'SoilMoistureContent', 'StorageLevel_mm']
 
   inflow_mm_hr: 'TotalInflow_mm/hr'      
-  outflow_mm_hr: 'StorageExfil_mm/hr'  
+  outflow_mm_hr: 'DrainOutflow_mm/hr'  
 
   inflow_ml_min: 'TotalInflow_ml/min' # Names for internal use (?)
-  outflow_ml_min: 'StorageExfil_ml/min' 
+  outflow_ml_min: 'DrainOutflow_ml/min' 
    
 param_grid:
-  soil.porosity: [0.45, 0.5]
-  soil.field_capacity: [0.15, 0.2]
-  soil.k_saturated: [60]
-  soil.k_slope: [40]
-  soil.suction_head: [2]
+  soil.porosity: [0.5]
+  soil.field_capacity: [0.2]
+  soil.k_saturated: [306]
+  soil.k_slope: [45]
+  soil.suction_head: [3]
   surface.void_fraction: [0.025]
   storage.void_fraction: [0.3]
   storage.clog_factor: [0]
