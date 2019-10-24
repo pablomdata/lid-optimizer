@@ -9,6 +9,16 @@ Below are the instructions for Windows 10.
 - Download and install [Git](https://git-scm.com/downloads).
 - Download and install [EPA SWMM 5](https://www.epa.gov/water-research/storm-water-management-model-swmm).
 
+## Clone the repository
+
+To get the most up-to-date version, clone the repository:
+
+`git clone https://github.com/jpmaldonado/lid-optimizer`
+
+or `pull`:
+
+`git pull https://github.com/jpmaldonado/lid-optimizer`.
+
 ## How to use the tool
 You need to open an Anaconda Prompt (Windows Menu | Anaconda Prompt) and type
 
