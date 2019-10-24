@@ -32,6 +32,7 @@ def evaluate(inputfile=sim['file'], reportfile='report.txt', params=None):
         report = parse_report('report.txt')
         experiment = parse_experiment(exp['file'])
         out = merge_and_correct(experiment=experiment, report=report)         
+        out.to_csv(reportfile)
     except:
         return -1,-1,-1,-1, -1, -1
        
