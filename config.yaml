@@ -1,10 +1,11 @@
 experiment:
-  file: './data/input/rain_AB.txt'
-  headers: ["DateTime", "ml_min_IN_A", "ml_min_OUT_A", "ml_min_IN_B", "ml_min_OUT_B"]
+  file: './data/input/DataOfExperiment-mmhr.txt'
   diameter: 20
-  inflow: 'ml_min_IN_A'
-  outflow: 'ml_min_OUT_A'
-
+  inflow: 'A-IN mm/hr'
+  outflow: 'A-OUT mm/hr'
+  lag: '2min' # lags with respect to the simulation
+  direction: 'forward' #lag direction, 'forward' or 'backward'
+  rain_events: './data/input/RainEventsEXP.csv'
 
 simulation:
   lid.name: "valec_01"
@@ -20,12 +21,9 @@ simulation:
   inflow_mm_hr: 'TotalInflow_mm/hr'      
   outflow_mm_hr: 'DrainOutflow_mm/hr'  
 
-  inflow_ml_min: 'TotalInflow_ml/min' # Names for internal use (?)
-  outflow_ml_min: 'DrainOutflow_ml/min' 
-   
 param_grid:
   soil.porosity: [0.5]
-  soil.field_capacity: [0.2]
+  soil.field_capacity: [0.2, 0.4]
   soil.k_saturated: [306]
   soil.k_slope: [45]
   soil.suction_head: [3]
@@ -33,4 +31,11 @@ param_grid:
   storage.void_fraction: [0.3]
   storage.clog_factor: [0]
 
+calibration_mode:
+  rain_event: True
+  all: False
 
+metrics: ['nse_inflow', 'nse_outflow'
+          , 'volume_inflow_sim', 'volume_outflow_sim'
+          , 'volume_inflow_exp', 'volume_outflow_exp'
+          , 'peak_flow', 'time_peak', 'pbias', 'sd', 'ad', 'qd' ]

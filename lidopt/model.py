@@ -4,12 +4,12 @@ from pyswmm import Simulation, LidGroups
 from pyswmm.lidlayers import Soil
 from pyswmm.lidcontrols import LidControls
 from .parsers import parse_experiment, parse_report, merge_and_correct
-from . import exp, sim
+from . import EXP, SIM, METRICS
 
-def evaluate(inputfile=sim['file'], reportfile='report.txt', params=None):
+def evaluate(inputfile=SIM['file'], experiment=None, reportfile='report.txt', params=None):
     
     with Simulation(inputfile=inputfile) as simulation:
-        lid=LidControls(simulation)[sim['lid.name']]
+        lid=LidControls(simulation)[SIM['lid.name']]
 
         lid.soil.porosity = params['soil.porosity']
         lid.soil.field_capacity = params['soil.field_capacity']
@@ -27,25 +27,36 @@ def evaluate(inputfile=sim['file'], reportfile='report.txt', params=None):
 
     print("\n")
     print('Simulation executed')
+
+    metrics = {}
+
     try:      
         # Read report and compare with experiment
         report = parse_report('report.txt')
-        experiment = parse_experiment(exp['file'])
-        out = merge_and_correct(experiment=experiment, report=report)         
+        if experiment is None:
+            experiment = parse_experiment(EXP['file'])
+        out = merge_and_correct(experiment=experiment, report=report)      
         out.to_csv(reportfile)
     except:
-        return -1,-1,-1,-1, -1, -1
-       
-    #############################
-    # METRICS
-    #############################
-
+        for metric in METRICS:
+            metrics[metric] = -1
+        return metrics
+                  
     # Recover values from simulation and exp
-    sim_inflow = out[sim['inflow_ml_min']]
-    sim_outflow = out[sim['outflow_ml_min']]
+    sim_inflow = out[SIM['inflow_mm_hr']]
+    sim_outflow = out[SIM['outflow_mm_hr']]
 
-    exp_inflow = out[exp['inflow']]
-    exp_outflow = out[exp['outflow']]
+    exp_inflow = out[EXP['inflow']]
+    exp_outflow = out[EXP['outflow']]
+
+    metrics = calculate_metrics(sim_inflow, sim_outflow, exp_inflow, exp_outflow)
+    return metrics
+
+
+#############################
+# METRICS
+#############################
+def calculate_metrics(sim_inflow, sim_outflow, exp_inflow, exp_outflow):
 
     metrics = {}
     ####################################################
@@ -61,13 +72,21 @@ def evaluate(inputfile=sim['file'], reportfile='report.txt', params=None):
     nse_outflow = (1-residuals/ss)
     metrics['nse_outflow'] = nse_outflow
 
-    # Inflow vol
-    volume_inflow = np.sum(sim_inflow)
-    metrics['volume_inflow'] = volume_inflow
+    # Inflow vol sim
+    volume_inflow_sim = np.sum(sim_inflow)
+    metrics['volume_inflow_sim'] = volume_inflow_sim
             
-    #Outflow vol
-    volume_outflow = np.sum(sim_outflow)
-    metrics['volume_outflow'] = volume_outflow
+    #Outflow vol sim
+    volume_outflow_sim = np.sum(sim_outflow)
+    metrics['volume_outflow_sim'] = volume_outflow_sim
+
+    # Inflow vol exp
+    volume_inflow_exp = np.sum(exp_inflow)
+    metrics['volume_inflow_exp'] = volume_inflow_exp
+            
+    #Outflow vol sim
+    volume_outflow_exp = np.sum(exp_outflow)
+    metrics['volume_outflow_exp'] = volume_outflow_exp
 
     # Percent bias
     metrics['pbias'] = 100*(exp_outflow-sim_outflow).sum()/exp_outflow.sum()
