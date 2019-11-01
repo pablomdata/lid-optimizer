@@ -3,7 +3,7 @@ experiment:
   diameter: 20
   inflow: 'A-IN mm/hr'
   outflow: 'A-OUT mm/hr'
-  lag: '2min' # lags with respect to the simulation
+  lag: '0min' # lags with respect to the simulation
   direction: 'forward' #lag direction, 'forward' or 'backward'
   rain_events: './data/input/RainEventsEXP.csv'
 
@@ -22,18 +22,50 @@ simulation:
   outflow_mm_hr: 'DrainOutflow_mm/hr'  
 
 param_grid:
+  # Drain
+  drain.coefficient: [0]
+  drain.exponent: [0]
+  drain.offset: [0]
+  drain.delay: [0]
+  
+  #DrainMat
+  drainmat.thickness: [0]
+  drainmat.void_fraction: [0]
+  drainmat.roughness: [0]
+
+  # Pavement
+  pavement.thickness: [0]
+  pavement.void_fraction: [0]
+  pavement.impervious_fraction: [0]
+  pavement.k_saturated: [0]
+  pavement.clog_factor: [0]
+  pavement.regeneration: [0]
+  pavement.regeneration_degree: [0]
+
+  # Soil
+  soil.thickness: [0]
   soil.porosity: [0.5]
   soil.field_capacity: [0.2, 0.4]
+  soil.wilting_point: [0]
   soil.k_saturated: [306]
   soil.k_slope: [45]
   soil.suction_head: [3]
-  surface.void_fraction: [0.025]
-  storage.void_fraction: [0.3]
+
+  # Storage
+  storage.thickness: [0]
+  storage.void_fraction: [0]
+  storage.k_saturated: [0]
   storage.clog_factor: [0]
 
+  # Surface
+  surface.thickness: [0]
+  surface.void_fraction: [0.025]
+  surface.roughness: [0]
+  surface.slope: [0]
+
 calibration_mode:
-  rain_event: True
-  all: False
+  rain_event: False
+  all: True
 
 metrics: ['nse_inflow', 'nse_outflow'
           , 'volume_inflow_sim', 'volume_outflow_sim'

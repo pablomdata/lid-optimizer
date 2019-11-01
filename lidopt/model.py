@@ -11,15 +11,8 @@ def evaluate(inputfile=SIM['file'], experiment=None, reportfile='report.txt', pa
     with Simulation(inputfile=inputfile) as simulation:
         lid=LidControls(simulation)[SIM['lid.name']]
 
-        lid.soil.porosity = params['soil.porosity']
-        lid.soil.field_capacity = params['soil.field_capacity']
-        lid.soil.k_saturated = params['soil.k_saturated']
-        lid.soil.k_slope = params['soil.k_slope']
-        lid.soil.suction_head = params['soil.suction_head']
-            
-        lid.surface.void_fraction = params['surface.void_fraction']
-        lid.storage.void_fraction = params['storage.void_fraction']
-        lid.storage.clog_factor = params['storage.clog_factor']
+        for p in params.keys():
+            setattr(lid, p, params[p])
 
         for step in simulation:
             pass
