@@ -64,8 +64,7 @@ param_grid:
   surface.slope: [0]
 
 calibration_mode:
-  rain_event: False
-  all: True
+  save_rain_events: False
 
 metrics: ['nse_inflow', 'nse_outflow'
           , 'volume_inflow_sim', 'volume_outflow_sim'

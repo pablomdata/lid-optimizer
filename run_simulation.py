@@ -29,35 +29,37 @@ def run(event=None, event_name=None, path='./data/output/results.csv'):
         df.to_csv(path.format(event_name+1), index_label='simulation_number')
     else:
         df.to_csv(path, index_label='simulation_number')
+    
+    return df
 
 
 def run_per_event():
     rain_events = pd.read_csv(EXP['rain_events'], parse_dates=True)
-    experiment = parse_experiment(EXP['file'])
-    total_rain_events = rain_events.shape[0]   
-    for i in range(total_rain_events):
-        start= pd.to_datetime(rain_events.loc[i,'Start'], format='%m/%d/%Y %H:%M')      
-        end = pd.to_datetime(rain_events.loc[i,'End'], format='%m/%d/%Y %H:%M')     
-        event = experiment.loc[start:end]
-        print('*'*100)
-        print("INFO: Executing rain event {0} of {1}".format(i+1,total_rain_events+1))
-        run(event,i, path="./data/output/events/results_RE_{}.csv")
+    total_rain_events = rain_events.shape[0]
+    experiment = parse_experiment(EXP['file'])   
+    event_path = "./data/output/events/results_CAL_{}_RE_{}.csv"
+    df = run()
+
+    for i,row in tqdm(df.iterrows(), total = df.shape[0]):
+        for j in range(total_rain_events):
+            start= pd.to_datetime(rain_events.loc[j,'Start'], format='%m/%d/%Y %H:%M')      
+            end = pd.to_datetime(rain_events.loc[j,'End'], format='%m/%d/%Y %H:%M')    
+            event = pd.read_csv('./data/output/reports/parameters_{}.txt'.format(str(i+1)), index_col=0, parse_dates=True)
+            event = event.loc[start:end]
+            event.to_csv(event_path.format(i+1,j+1))
 
 
 def main():
-    if MODE['all']:
+    if MODE['save_rain_events']:
         print('*'*100)
-        print("RUNNING CALIBRATION ON FULL DATA")
-        print('*'*100)
-        run()
-
-    if MODE['rain_event']:        
-        print('*'*100)
-        print("*** RUNNING CALIBRATION PER RAIN EVENT")
+        print("INFO: Running calibration WITHOUT saving individual events")
         print('*'*100)
         run_per_event()
-    
-
+    else:
+        print('*'*100)
+        print("INFO: Running calibration AND saving individual events")
+        print('*'*100)
+        run()        
 
 if __name__ == "__main__":
     main()
