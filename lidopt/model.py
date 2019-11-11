@@ -11,8 +11,28 @@ def evaluate(inputfile=SIM['file'], experiment=None, reportfile='report.txt', pa
     with Simulation(inputfile=inputfile) as simulation:
         lid=LidControls(simulation)[SIM['lid.name']]
 
-        for p in params.keys():
-            setattr(lid, p, params[p])
+        lid.drain.coefficient = params['drain.coefficient']
+        lid.drain.exponent = params['drain.exponent']
+        lid.drain.offset = params['drain.offset']
+        lid.drain.delay = params['drain.delay']
+        
+        lid.soil.thickness = params['soil.thickness']
+        lid.soil.porosity = params['soil.porosity']
+        lid.soil.field_capacity = params['soil.field_capacity']
+        lid.soil.wilting_point = params['soil.wilting_point']
+        lid.soil.k_saturated = params['soil.k_saturated']
+        lid.soil.k_slope = params['soil.k_slope']
+        lid.soil.suction_head = params['soil.suction_head']
+            
+        lid.surface.thickness = params['surface.thickness']
+        lid.surface.void_fraction = params['surface.void_fraction']
+        lid.surface.roughness = params['surface.roughness']
+        lid.surface.slope = params['surface.slope']
+        
+        lid.storage.thickness = params['storage.thickness']
+        lid.storage.void_fraction = params['storage.void_fraction']
+        lid.storage.k_saturated = params['storage.k_saturated']
+        lid.storage.clog_factor = params['storage.clog_factor']
 
         for step in simulation:
             pass
@@ -98,4 +118,7 @@ def calculate_metrics(sim_inflow, sim_outflow, exp_inflow, exp_outflow):
 
     # Quadratic deviation
     metrics['qd'] = np.sqrt(np.sum((exp_outflow.values-sim_outflow.values)**2)/len(exp_outflow))
+
+    # deltaV
+    metrics['deltaV'] = (volume_inflow_exp - volume_inflow_sim) / volume_inflow_exp
     return metrics

@@ -1,4 +1,5 @@
 import yaml
+import numpy as np
 
 with open("config.yaml", 'r') as stream:
     config = yaml.safe_load(stream)

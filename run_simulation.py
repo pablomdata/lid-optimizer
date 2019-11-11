@@ -5,8 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import itertools
 from tqdm import tqdm
-from lidopt.model import evaluate
-from lidopt import PARAM_GRID, METRICS, EXP, MODE
+from lidopt.model import evaluate, calculate_metrics
+from lidopt import PARAM_GRID, METRICS, EXP, SIM, MODE
 from lidopt.parsers import parse_experiment
 
 def run(event=None, event_name=None, path='./data/output/results.csv'):
@@ -22,6 +22,7 @@ def run(event=None, event_name=None, path='./data/output/results.csv'):
             results = evaluate(reportfile='./data/output/reports/parameters_RE_{0}_{1}.txt'.format(event_name+1,i+1), experiment=event, params=df.loc[i, col_names])
         else:
             results = evaluate(reportfile='./data/output/reports/parameters_{}.txt'.format(str(i+1)), experiment=event, params=df.loc[i, col_names])
+
         for metric in METRICS:
             df.loc[i, metric] = results[metric]
     
@@ -35,29 +36,48 @@ def run(event=None, event_name=None, path='./data/output/results.csv'):
 
 def run_per_event():
     rain_events = pd.read_csv(EXP['rain_events'], parse_dates=True)
-    total_rain_events = rain_events.shape[0]
-    experiment = parse_experiment(EXP['file'])   
-    event_path = "./data/output/events/results_CAL_{}_RE_{}.csv"
+    total_rain_events = rain_events.shape[0]  
+    event_path = "./data/output/events/event_CAL_{}_RE_{}.csv"
     df = run()
 
     for i,row in tqdm(df.iterrows(), total = df.shape[0]):
         for j in range(total_rain_events):
-            start= pd.to_datetime(rain_events.loc[j,'Start'], format='%m/%d/%Y %H:%M')      
+            start= pd.to_datetime(rain_events.loc[j,'Start'], format="%m/%d/%Y %H:%M")      
             end = pd.to_datetime(rain_events.loc[j,'End'], format='%m/%d/%Y %H:%M')    
             event = pd.read_csv('./data/output/reports/parameters_{}.txt'.format(str(i+1)), index_col=0, parse_dates=True)
+            
+            event.sort_index(ascending=True, inplace=True)
+
+            print(start)
+            print(end)
+            print(event.loc[start:end])
             event = event.loc[start:end]
+            
+            # Recover values from simulation and exp
+            sim_inflow = event[SIM['inflow_mm_hr']]
+            sim_outflow = event[SIM['outflow_mm_hr']]
+
+            exp_inflow = event[EXP['inflow']]
+            exp_outflow = event[EXP['outflow']]
+
+
+            if event.shape[0] > 0: 
+                metrics = calculate_metrics(sim_inflow, sim_outflow, exp_inflow, exp_outflow)
+                metrics.to_csv('./data/output/events/results_CAL_{}_RE_{}.csv'.format(i+1,j+1))
+
+            # Save event
             event.to_csv(event_path.format(i+1,j+1))
 
 
 def main():
     if MODE['save_rain_events']:
         print('*'*100)
-        print("INFO: Running calibration WITHOUT saving individual events")
+        print("INFO: Running calibration AND saving individual events")
         print('*'*100)
         run_per_event()
     else:
         print('*'*100)
-        print("INFO: Running calibration AND saving individual events")
+        print("INFO: Running calibration WITHOUT saving individual events")
         print('*'*100)
         run()        
 

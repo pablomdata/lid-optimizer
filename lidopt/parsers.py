@@ -39,7 +39,7 @@ def merge_and_correct(report, experiment):
     out.fillna(method='pad', inplace=True)
 
     # Apply correction factor
-    correction_factor = (1+out[EXP['inflow']])/(1+out[SIM['inflow_mm_hr']])
+    correction_factor = 1
 
     out[EXP['inflow']] = out[EXP['inflow']]*correction_factor
     out[EXP['outflow']] = out[EXP['outflow']]*correction_factor
@@ -57,4 +57,4 @@ def convert_units(flow):
     '''
     diameter = EXP['diameter']
     area = diameter**2*np.pi/4
-    return flow*area/(60*10)    
+    return flow    
