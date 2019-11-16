@@ -26,39 +26,45 @@ def parse_report(report_file='report.txt', names=SIM['headers']):
     report.sort_index(ascending=True, inplace=True)
     return report
 
+def assign_events(df, t, C):
+# function assigns number of events (ev_num) to datasets (df)
+# df = dataset
+# t = minimum time span between two events (condition of time span among the events) IN SECONDS
+# C = the column with rainfall data
+    df = df[df[C] != 0].reset_index()
+    df['event_num'] = 0
+
+    for i in range(1, df.shape[0]):
+        td = df.loc[i, 'DateTime'] - df.loc[i-1, 'DateTime']
+        if td.seconds > t:
+            df.loc[i, 'event_num'] = df.loc[i-1, 'event_num'] + 1
+        else:
+            df.loc[i, 'event_num'] = df.loc[i-1, 'event_num']
+        return df
 
 def merge_and_correct(report, experiment):
 
     if CYLINDER:
         # Merging to account for cylinder experiment
+        exp_cols = [EXP['inflow'], EXP['outflow']]
 
-        # 1. Keep only when it rains
-        rain = experiment[experiment[EXP['inflow']] != 0].reset_index()
-        rain['event_num'] = 1
-        for i in range(1,rain.shape[0]):
-            td = rain.loc[i,'DateTime']-rain.loc[i-1,'DateTime']
-            if td.seconds > 3600:
-                rain.loc[i, 'event_num'] = rain.loc[i-1, 'event_num'] + 1
-            else:
-                rain.loc[i, 'event_num'] = rain.loc[i-1, 'event_num']
+        rain = assign_events(experiment, 3600, EXP['inflow'])
+        rain = rain[['DateTime', 'event_num']+exp_cols]
+        rain.drop_duplicates(inplace=True)
 
         # Same shift for simulation
-        sim = report[report[SIM['inflow_mm_hr']] != 0].reset_index()
-        sim['event_num'] = 1
-        for i in range(1,sim.shape[0]):
-            
-            td = sim.loc[i,'DateTime']-sim.loc[i-1,'DateTime']
-            if td.seconds > DELAY:
-                sim.loc[i, 'event_num'] = sim.loc[i-1, 'event_num'] + 1
-            else:
-                sim.loc[i, 'event_num'] = sim.loc[i-1, 'event_num']
+        sim = assign_events(report, 120, SIM['inflow_mm_hr'])
         
-        sim.drop(columns='DateTime', inplace=True)
-        out = pd.merge(sim, rain, left_on='event_num', right_on='event_num')
-
-        out.fillna(0, inplace=True)
+        sim_cols = [SIM['inflow_mm_hr'], SIM['outflow_mm_hr']]
+        sim = sim[['DateTime', 'event_num']+sim_cols]
+        sim.drop_duplicates(inplace=True)
+       
+        out = pd.merge(sim, rain, on=['DateTime','event_num'], how='right')
+        cols = ['DateTime']+sim_cols+exp_cols
+        out = out[cols]
+        out.drop_duplicates(keep='first', inplace=True)
+        out.dropna(inplace=True, axis=0)
         out.set_index('DateTime', inplace=True) 
-
     else:
         # Merge by dates
         out = pd.merge_asof(report

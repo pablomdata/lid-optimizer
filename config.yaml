@@ -8,7 +8,7 @@ experiment:
   rain_events: './data/input/RainEventsEXP.csv'
 
 is_cylinder: True
-cylinder_delay_seconds: 0
+cylinder_delay_seconds: 3600
 
 simulation:
   lid.name: "UCEEB-VPR1"
@@ -67,7 +67,7 @@ param_grid:
   surface.slope: [0]
 
 calibration_mode:
-  save_rain_events: True
+  save_rain_events: False
 
 metrics: ['nse_inflow', 'nse_outflow'
           , 'volume_inflow_sim', 'volume_outflow_sim'
