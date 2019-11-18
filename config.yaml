@@ -8,7 +8,8 @@ experiment:
   rain_events: './data/input/RainEventsEXP.csv'
 
 is_cylinder: True
-cylinder_delay_seconds: 3600
+cylinder_delay_exp: 3600
+cylinder_delay_sim: 120
 
 simulation:
   lid.name: "UCEEB-VPR1"
@@ -74,4 +75,5 @@ metrics: ['nse_inflow', 'nse_outflow'
           , 'volume_inflow_exp', 'volume_outflow_exp'
           , 'peak_flow', 'time_peak', 'pbias', 'sd', 'ad', 'qd' ]
 
-metrics_start_date: '2017-08-24 15:00:00'          
+metrics_start_date: '2018-05-23 23:59:00'          
+metrics_end_date: '2018-05-25 23:59:00' 

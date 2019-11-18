@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from . import EXP, SIM, START_DATE, CYLINDER, DELAY
+from . import EXP, SIM, START_DATE, END_DATE, CYLINDER, CYLINDER_DELAY_EXP, CYLINDER_DELAY_SIM
 
 def parse_experiment(experiment_file=EXP['file']):
     exp = pd.read_csv(experiment_file
@@ -48,23 +48,32 @@ def merge_and_correct(report, experiment):
         # Merging to account for cylinder experiment
         exp_cols = [EXP['inflow'], EXP['outflow']]
 
-        rain = assign_events(experiment, 3600, EXP['inflow'])
+        rain = assign_events(experiment, CYLINDER_DELAY_EXP, EXP['inflow'])
+        rain = rain[['DateTime', 'event_num']]
+        
+        rain = pd.merge(rain, experiment, how='outer', on='DateTime')
         rain = rain[['DateTime', 'event_num']+exp_cols]
-        rain.drop_duplicates(inplace=True)
+        rain = rain.fillna(method='ffill')
+
 
         # Same shift for simulation
-        sim = assign_events(report, 120, SIM['inflow_mm_hr'])
+        sim = assign_events(report, CYLINDER_DELAY_SIM, SIM['inflow_mm_hr'])
         
         sim_cols = [SIM['inflow_mm_hr'], SIM['outflow_mm_hr']]
+        sim = sim[['DateTime', 'event_num']]
+        sim = pd.merge(sim, report, how='outer', on='DateTime')
         sim = sim[['DateTime', 'event_num']+sim_cols]
+        sim = sim.fillna(method='ffill')
+
         sim.drop_duplicates(inplace=True)
        
-        out = pd.merge(sim, rain, on=['DateTime','event_num'], how='right')
+        out = pd.merge(sim, rain, on=['DateTime','event_num'], how='left')
         cols = ['DateTime']+sim_cols+exp_cols
         out = out[cols]
         out.drop_duplicates(keep='first', inplace=True)
-        out.dropna(inplace=True, axis=0)
+      
         out.set_index('DateTime', inplace=True) 
+        out.fillna(0, inplace=True)
     else:
         # Merge by dates
         out = pd.merge_asof(report
@@ -72,21 +81,16 @@ def merge_and_correct(report, experiment):
                             , left_index=True
                             , right_index=True
                             , direction=EXP['direction']
-                            , tolerance=pd.Timedelta(EXP['lag']))
+                            , tolerance=pd.Timedelta(EXP['lag'])
+                                    )
 
         # Correct NAs
         out.fillna(method='pad', inplace=True)
-
-    # Apply correction factor
-    correction_factor = 1
-
-    out[EXP['inflow']] = out[EXP['inflow']]*correction_factor
-    out[EXP['outflow']] = out[EXP['outflow']]*correction_factor
-
-    out[SIM['inflow_mm_hr']] = out[SIM['inflow_mm_hr']]*correction_factor
-    out[SIM['outflow_mm_hr']] = out[SIM['outflow_mm_hr']]*correction_factor
     
-    out = out[START_DATE:]
+    
+    out = out.loc[START_DATE:END_DATE]
+    if out.shape[0]==0:
+        print("Check the dates! Invalid date range/format")
     return out[[SIM['inflow_mm_hr'], SIM['outflow_mm_hr'], EXP['inflow'], EXP['outflow']]]
 
 
