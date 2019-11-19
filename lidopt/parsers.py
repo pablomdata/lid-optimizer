@@ -75,18 +75,10 @@ def merge_and_correct(report, experiment):
         out.set_index('DateTime', inplace=True) 
         out.fillna(0, inplace=True)
     else:
-        # Merge by dates
-        out = pd.merge_asof(report
-                            , experiment
-                            , left_index=True
-                            , right_index=True
-                            , direction=EXP['direction']
-                            , tolerance=pd.Timedelta(EXP['lag'])
-                                    )
-
+        
         out = pd.merge(report, experiment, left_index=True, right_index=True, how='outer')
         # Correct NAs
-        out.fillna(method='pad', inplace=True)
+        out.fillna(0, inplace=True)
     
     
     out = out.loc[START_DATE:END_DATE]

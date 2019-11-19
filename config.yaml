@@ -3,11 +3,9 @@ experiment:
   diameter: 20
   inflow: 'A-IN mm/hr'
   outflow: 'A-OUT mm/hr'
-  lag: '1min' # lags with respect to the simulation
-  direction: 'forward' #lag direction, 'forward' or 'backward'
   rain_events: './data/input/RainEventsEXP.csv'
 
-is_cylinder: False
+is_cylinder: True
 cylinder_delay_exp: 3600
 cylinder_delay_sim: 120
 
