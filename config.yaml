@@ -7,7 +7,7 @@ experiment:
   direction: 'forward' #lag direction, 'forward' or 'backward'
   rain_events: './data/input/RainEventsEXP.csv'
 
-is_cylinder: True
+is_cylinder: False
 cylinder_delay_exp: 3600
 cylinder_delay_sim: 120
 
@@ -72,7 +72,7 @@ calibration_mode:
 
 metrics: ['nse_inflow', 'nse_outflow'
           , 'volume_inflow_sim', 'volume_outflow_sim'
-          , 'volume_inflow_exp', 'volume_outflow_exp'
+          , 'volume_inflow_exp', 'volume_outflow_exp', 'deltaV'
           , 'peak_flow', 'time_peak', 'pbias', 'sd', 'ad', 'qd' ]
 
 metrics_start_date: '2018-05-23 23:59:00'          

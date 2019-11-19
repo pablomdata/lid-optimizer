@@ -67,7 +67,7 @@ def merge_and_correct(report, experiment):
 
         sim.drop_duplicates(inplace=True)
        
-        out = pd.merge(sim, rain, on=['DateTime','event_num'], how='left')
+        out = pd.merge(sim, rain, on=['DateTime','event_num'], how='outer')
         cols = ['DateTime']+sim_cols+exp_cols
         out = out[cols]
         out.drop_duplicates(keep='first', inplace=True)
@@ -84,6 +84,7 @@ def merge_and_correct(report, experiment):
                             , tolerance=pd.Timedelta(EXP['lag'])
                                     )
 
+        out = pd.merge(report, experiment, left_index=True, right_index=True, how='outer')
         # Correct NAs
         out.fillna(method='pad', inplace=True)
     
